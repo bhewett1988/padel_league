@@ -5,17 +5,23 @@ const SUPABASE_URL = "https://rlbekoiiigeoguhmhxxih.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsYmVrb2lpaWdlb2d1bWh4eGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzYxNjcsImV4cCI6MjA5NzcxMjE2N30.2AATxMvvMNCYlBL_Hp9ju_5y0mspiWz9oDrZKnjBtzI";
 
 async function sbFetch(path, options = {}) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+  const url = `${SUPABASE_URL}/rest/v1/${path}`;
+  console.log("sbFetch:", options.method || "GET", url);
+  const res = await fetch(url, {
     ...options,
     headers: {
       "apikey": SUPABASE_KEY,
       "Authorization": `Bearer ${SUPABASE_KEY}`,
       "Content-Type": "application/json",
-      "Prefer": "return=representation",
+      "Prefer": "return=minimal",
       ...options.headers,
     },
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("sbFetch error:", res.status, errText);
+    throw new Error(`${res.status}: ${errText}`);
+  }
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
@@ -557,7 +563,8 @@ export default function App() {
         if (first) setNextMatchId(first.id);
       }
     } catch (e) {
-      setError("Could not connect to database.");
+      console.error("Load error:", e);
+      setError(e.message || "Could not connect to database.");
     } finally {
       setLoading(false);
     }
@@ -588,8 +595,9 @@ export default function App() {
   );
 
   if (error) return (
-    <div style={{ minHeight: "100vh", background: "#060e24", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ color: "#e53935", fontSize: 16, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase" }}>{error}</div>
+    <div style={{ minHeight: "100vh", background: "#060e24", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16, padding: 40 }}>
+      <div style={{ color: "#e53935", fontSize: 16, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase" }}>Connection Error</div>
+      <div style={{ color: "#888", fontSize: 13, fontFamily: "monospace", maxWidth: 600, textAlign: "center" }}>{error}</div>
     </div>
   );
 
