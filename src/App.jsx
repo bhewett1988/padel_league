@@ -259,8 +259,9 @@ function HomePage({ matches, onNav, nextMatchId }) {
             <div style={{ color: C.muted, fontSize: 15, textAlign: "center", padding: "12px 0" }}>All matches complete</div>
           )}
         </div>
-        <div style={{ display: "flex", gap: 12 }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <BigBtn onClick={() => onNav("leaderboard")}>🏆 Leaderboard</BigBtn>
+          <BigBtn onClick={() => onNav("pickmatch")}>📅 Pick Match</BigBtn>
           <BigBtn onClick={() => onNav("results")} dim>📋 Results</BigBtn>
         </div>
       </div>
@@ -544,6 +545,157 @@ function ResultsPage({ matches, updateScore, nextMatchId, setNextMatchId }) {
   );
 }
 
+
+// ── PICK MATCH PAGE ───────────────────────────────────────────────────────────
+function PickMatchPage({ matches, setNextMatchId }) {
+  const [selected, setSelected] = useState([]);
+  const [suggestion, setSuggestion] = useState(null);
+  const [confirmed, setConfirmed] = useState(false);
+
+  function togglePlayer(p) {
+    setSelected(prev => {
+      if (prev.includes(p)) return prev.filter(x => x !== p);
+      if (prev.length >= 4) return prev; // max 4
+      return [...prev, p];
+    });
+    setSuggestion(null);
+    setConfirmed(false);
+  }
+
+  function findMatch() {
+    if (selected.length !== 4) return;
+    const [a, b, c, d] = selected;
+    // All possible pairings of 4 players into 2 teams
+    const pairings = [
+      { t1: [a, b], t2: [c, d] },
+      { t1: [a, c], t2: [b, d] },
+      { t1: [a, d], t2: [b, c] },
+    ];
+    // For each pairing, find the matching match in the list
+    const candidates = [];
+    pairings.forEach(({ t1, t2 }) => {
+      const match = matches.find(m =>
+        (m.t1.includes(t1[0]) && m.t1.includes(t1[1]) && m.t2.includes(t2[0]) && m.t2.includes(t2[1])) ||
+        (m.t1.includes(t2[0]) && m.t1.includes(t2[1]) && m.t2.includes(t1[0]) && m.t2.includes(t1[1]))
+      );
+      if (match) candidates.push(match);
+    });
+    // Filter out already played
+    const unplayed = candidates.filter(m => m.t1sets === null && m.t2sets === null);
+    const played = candidates.filter(m => m.t1sets !== null && m.t2sets !== null);
+    if (unplayed.length > 0) {
+      setSuggestion({ match: unplayed[0], allPlayed: false, remaining: unplayed.length });
+    } else if (played.length > 0) {
+      setSuggestion({ match: played[0], allPlayed: true, remaining: 0 });
+    } else {
+      setSuggestion(null);
+    }
+    setConfirmed(false);
+  }
+
+  async function confirmMatch() {
+    if (!suggestion) return;
+    await setNextMatchId(suggestion.match.id);
+    setConfirmed(true);
+  }
+
+  const th = { padding: "10px 14px", fontSize: 11, fontWeight: 900, letterSpacing: 3, textTransform: "uppercase", color: C.muted, borderBottom: "1px solid rgba(255,255,255,0.08)" };
+
+  return (
+    <div style={{ maxWidth: 600, margin: "0 auto", padding: "36px 24px" }}>
+      <div style={{ fontSize: 42, fontWeight: 900, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
+        <span style={{ color: C.gold }}>Pick</span> Match
+      </div>
+      <div style={{ fontSize: 12, color: C.muted, letterSpacing: 3, textTransform: "uppercase", marginBottom: 28 }}>
+        Select 4 players — we'll find the next unplayed match
+      </div>
+
+      {/* Player selector */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 24 }}>
+        {PLAYERS.map(p => {
+          const active = selected.includes(p);
+          const disabled = !active && selected.length >= 4;
+          return (
+            <button key={p} onClick={() => !disabled && togglePlayer(p)} style={{
+              padding: "14px 10px", border: `2px solid ${active ? C.gold : "rgba(255,255,255,0.1)"}`,
+              background: active ? "rgba(41,121,255,0.2)" : "transparent",
+              color: disabled ? "rgba(255,255,255,0.2)" : active ? C.gold : C.text,
+              fontFamily: "inherit", fontSize: 16, fontWeight: 900,
+              letterSpacing: 2, textTransform: "uppercase", cursor: disabled ? "default" : "pointer",
+              borderRadius: 2, transition: "all 0.15s",
+            }}>{p}</button>
+          );
+        })}
+      </div>
+
+      <div style={{ fontSize: 12, color: selected.length === 4 ? "#4caf50" : C.muted, letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>
+        {selected.length}/4 players selected
+      </div>
+
+      {selected.length === 4 && (
+        <BigBtn onClick={findMatch}>🔍 Find Match</BigBtn>
+      )}
+
+      {suggestion && (
+        <div style={{ marginTop: 28 }}>
+          <Card accent={suggestion.allPlayed ? "rgba(255,100,100,0.3)" : "rgba(41,121,255,0.3)"}>
+            <CardHeader
+              bg={suggestion.allPlayed ? "#3a1a1a" : C.gold}
+              dark={!suggestion.allPlayed}
+              title={suggestion.allPlayed ? "⚠️ All matches played!" : "✅ Suggested Match"}
+              sub={suggestion.allPlayed ? "REPLAYING" : `${suggestion.remaining} UNPLAYED OPTIONS`}
+            />
+            <div style={{ padding: "20px 18px" }}>
+              {suggestion.allPlayed && (
+                <div style={{ fontSize: 12, color: "#e57373", letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>
+                  These 4 players have played all their matches — suggesting a replay
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+                <div style={{ flex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 900, textTransform: "uppercase", color: C.gold, lineHeight: 1.2 }}>
+                    {suggestion.match.t1[0]}
+                  </div>
+                  <div style={{ fontSize: 10, color: C.muted }}>& </div>
+                  <div style={{ fontSize: 22, fontWeight: 900, textTransform: "uppercase", color: C.gold, lineHeight: 1.2 }}>
+                    {suggestion.match.t1[1]}
+                  </div>
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: C.gold }}>VS</div>
+                <div style={{ flex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 900, textTransform: "uppercase", color: C.gold, lineHeight: 1.2 }}>
+                    {suggestion.match.t2[0]}
+                  </div>
+                  <div style={{ fontSize: 10, color: C.muted }}>&</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, textTransform: "uppercase", color: C.gold, lineHeight: 1.2 }}>
+                    {suggestion.match.t2[1]}
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: C.muted, letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>
+                Match #{suggestion.match.id}
+              </div>
+              {confirmed ? (
+                <div style={{ fontSize: 14, color: "#4caf50", fontWeight: 700, letterSpacing: 3, textTransform: "uppercase" }}>
+                  ✓ Set as this week's match!
+                </div>
+              ) : (
+                <BigBtn onClick={confirmMatch}>📌 Set as Next Match</BigBtn>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {selected.length === 4 && !suggestion && (
+        <div style={{ marginTop: 20, fontSize: 13, color: C.muted }}>
+          Tap Find Match to see the suggestion
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── APP ROOT ──────────────────────────────────────────────────────────────────
 export default function App() {
   const [page, setPage] = useState("home");
@@ -639,6 +791,7 @@ export default function App() {
         {page === "home"        && <HomePage matches={matches} onNav={setPage} nextMatchId={nextMatchId} />}
         {page === "leaderboard" && <LeaderboardPage matches={matches} />}
         {page === "results"     && <ResultsPage matches={matches} updateScore={handleUpdateScore} nextMatchId={nextMatchId} setNextMatchId={handleSetNextMatch} />}
+        {page === "pickmatch"   && <PickMatchPage matches={matches} setNextMatchId={handleSetNextMatch} />}
       </div>
     </div>
   );
