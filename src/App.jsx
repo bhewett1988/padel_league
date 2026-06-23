@@ -193,7 +193,7 @@ function PodiumRow({ rank, name, pts, sub }) {
   );
 }
 
-function BigBtn({ children, onClick, dim }) {
+function BigBtn({ children, onClick, dim, full }) {
   const [hover, setHover] = useState(false);
   return (
     <button
@@ -201,13 +201,14 @@ function BigBtn({ children, onClick, dim }) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
-        display: "inline-flex", alignItems: "center", gap: 10,
-        padding: "13px 28px",
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+        padding: "11px 16px",
+        width: full ? "100%" : "auto",
         border: `2px solid ${dim ? "rgba(41,121,255,0.3)" : C.gold}`,
         background: hover ? (dim ? "rgba(41,121,255,0.15)" : C.gold) : "transparent",
         color: hover ? (dim ? "#fff" : C.dark) : (dim ? "rgba(41,121,255,0.6)" : C.gold),
-        fontFamily: "inherit", fontSize: 13, fontWeight: 900,
-        letterSpacing: 3, textTransform: "uppercase", cursor: "pointer",
+        fontFamily: "inherit", fontSize: 12, fontWeight: 900,
+        letterSpacing: 2, textTransform: "uppercase", cursor: "pointer",
         borderRadius: 2, transition: "all 0.15s",
       }}
     >{children}</button>
@@ -222,65 +223,66 @@ function HomePage({ matches, onNav, nextMatchId }) {
   const noResults = indiv.every(p => p.played === 0);
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 40px 60px" }}>
-      {/* Title row */}
-      <div style={{ marginBottom: 36 }}>
-        <div style={{ fontSize: 11, color: C.muted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 6 }}>🎾 Season 2025</div>
-        <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 0.9, textTransform: "uppercase", letterSpacing: 2 }}>
+    <div style={{ maxWidth: 600, margin: "0 auto", padding: "20px 16px 40px" }}>
+      {/* Title */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 10, color: C.muted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 4 }}>🎾 Season 2025</div>
+        <div style={{ fontSize: 36, fontWeight: 900, lineHeight: 0.95, textTransform: "uppercase", letterSpacing: 2 }}>
           <span style={{ color: C.gold }}>Padel</span> League
         </div>
       </div>
 
-      {/* Match card + buttons */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 36 }}>
-        <div style={{
-          background: "linear-gradient(135deg, rgba(41,121,255,0.1), rgba(245,196,0,0.02))",
-          border: "1px solid rgba(41,121,255,0.35)", borderRadius: 4, padding: "24px 28px",
-          maxWidth: 560,
-        }}>
-          <div style={{ fontSize: 11, letterSpacing: 4, color: C.gold, textTransform: "uppercase", fontWeight: 700, marginBottom: 16 }}>
-            ⚡ {thisWeek ? `This Week · Match ${thisWeek.id}` : "This Week"}
-          </div>
-          {thisWeek ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ flex: 1, textAlign: "center" }}>
-                <div style={{ fontSize: 24, fontWeight: 900, textTransform: "uppercase", lineHeight: 1.15 }}>{thisWeek.t1[0]}</div>
-                <div style={{ fontSize: 11, color: C.muted, letterSpacing: 2 }}>&</div>
-                <div style={{ fontSize: 24, fontWeight: 900, textTransform: "uppercase", lineHeight: 1.15 }}>{thisWeek.t1[1]}</div>
-              </div>
-              <div style={{ fontSize: 28, fontWeight: 900, color: C.gold, letterSpacing: 2 }}>VS</div>
-              <div style={{ flex: 1, textAlign: "center" }}>
-                <div style={{ fontSize: 24, fontWeight: 900, textTransform: "uppercase", lineHeight: 1.15 }}>{thisWeek.t2[0]}</div>
-                <div style={{ fontSize: 11, color: C.muted, letterSpacing: 2 }}>&</div>
-                <div style={{ fontSize: 24, fontWeight: 900, textTransform: "uppercase", lineHeight: 1.15 }}>{thisWeek.t2[1]}</div>
-              </div>
+      {/* Match card */}
+      <div style={{
+        background: "linear-gradient(135deg, rgba(41,121,255,0.1), rgba(41,121,255,0.02))",
+        border: "1px solid rgba(41,121,255,0.35)", borderRadius: 4, padding: "14px 16px", marginBottom: 14,
+      }}>
+        <div style={{ fontSize: 10, letterSpacing: 3, color: C.gold, textTransform: "uppercase", fontWeight: 700, marginBottom: 10 }}>
+          ⚡ {thisWeek ? `This Week · Match ${thisWeek.id}` : "This Week"}
+        </div>
+        {thisWeek ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ flex: 1, textAlign: "center" }}>
+              <div style={{ fontSize: 16, fontWeight: 900, textTransform: "uppercase", lineHeight: 1.2 }}>{thisWeek.t1[0]}</div>
+              <div style={{ fontSize: 9, color: C.muted }}>&</div>
+              <div style={{ fontSize: 16, fontWeight: 900, textTransform: "uppercase", lineHeight: 1.2 }}>{thisWeek.t1[1]}</div>
             </div>
-          ) : (
-            <div style={{ color: C.muted, fontSize: 15, textAlign: "center", padding: "12px 0" }}>All matches complete</div>
-          )}
-        </div>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <BigBtn onClick={() => onNav("leaderboard")}>🏆 Leaderboard</BigBtn>
-          <BigBtn onClick={() => onNav("pickmatch")}>📅 Pick Match</BigBtn>
-          <BigBtn onClick={() => onNav("results")} dim>📋 Results</BigBtn>
-        </div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: C.gold }}>VS</div>
+            <div style={{ flex: 1, textAlign: "center" }}>
+              <div style={{ fontSize: 16, fontWeight: 900, textTransform: "uppercase", lineHeight: 1.2 }}>{thisWeek.t2[0]}</div>
+              <div style={{ fontSize: 9, color: C.muted }}>&</div>
+              <div style={{ fontSize: 16, fontWeight: 900, textTransform: "uppercase", lineHeight: 1.2 }}>{thisWeek.t2[1]}</div>
+            </div>
+          </div>
+        ) : (
+          <div style={{ color: C.muted, fontSize: 13, textAlign: "center", padding: "8px 0" }}>All matches complete</div>
+        )}
       </div>
 
-      {/* Leaderboards side by side below */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, maxWidth: 860 }}>
+      {/* Buttons: Leaderboard + Results side by side, Pick Match below */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <BigBtn onClick={() => onNav("leaderboard")} full>🏆 Leaderboard</BigBtn>
+          <BigBtn onClick={() => onNav("results")} dim full>📋 Results</BigBtn>
+        </div>
+        <BigBtn onClick={() => onNav("pickmatch")} full>📅 Pick Match</BigBtn>
+      </div>
+
+      {/* Leaderboards side by side */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <Card accent="rgba(41,121,255,0.3)">
-          <CardHeader bg={C.gold} dark title="🥇 Top Players" sub="INDIVIDUAL" />
+          <CardHeader bg={C.gold} dark title="🥇 Players" sub="" />
           {noResults
-            ? <div style={{ padding: "20px 18px", color: C.muted, fontSize: 14 }}>No results yet — season hasn't started</div>
+            ? <div style={{ padding: "12px", color: C.muted, fontSize: 12 }}>No results yet</div>
             : indiv.slice(0, 3).map((p, i) => (
                 <PodiumRow key={p.name} rank={i + 1} name={p.name} pts={p.points} />
               ))
           }
         </Card>
         <Card accent="rgba(255,255,255,0.08)">
-          <CardHeader bg="#060f2a" title="🤝 Top Teams" sub="PARTNERSHIPS" />
+          <CardHeader bg="#060f2a" title="🤝 Teams" sub="" />
           {noResults
-            ? <div style={{ padding: "20px 18px", color: C.muted, fontSize: 14 }}>No results yet</div>
+            ? <div style={{ padding: "12px", color: C.muted, fontSize: 12 }}>No results yet</div>
             : teams.slice(0, 3).map((t, i) => (
                 <PodiumRow key={t.name} rank={i + 1} name={t.name} pts={t.points} />
               ))
@@ -339,14 +341,18 @@ function LeaderboardPage({ matches }) {
               <tr>
                 <th style={thStyle(false)}>#</th>
                 <th style={thStyle(false)}>Player</th>
+                <th style={thStyle(true)}>Played</th>
+                <th style={thStyle(true)}>PPG</th>
                 <th style={{ ...thStyle(true), color: C.gold }}>Points</th>
               </tr>
             </thead>
             <tbody>
               {indiv.map((p, i) => (
                 <tr key={p.name}>
-                  <td style={{ ...tdStyle(i % 2), color: i < 3 ? C.gold : C.muted, fontWeight: 900, width: 48 }}>{i + 1}</td>
+                  <td style={{ ...tdStyle(i % 2), color: i < 3 ? C.gold : C.muted, fontWeight: 900, width: 36 }}>{i + 1}</td>
                   <td style={{ ...tdStyle(i % 2), fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>{p.name}</td>
+                  <td style={{ ...tdStyle(i % 2, true), color: C.muted }}>{p.played}</td>
+                  <td style={{ ...tdStyle(i % 2, true), color: "#aaa", fontSize: 13 }}>{p.played > 0 ? (p.points / p.played).toFixed(1) : "—"}</td>
                   <td style={{ ...tdStyle(i % 2, true), fontSize: 18, fontWeight: 900, color: C.gold }}>{p.points}</td>
                 </tr>
               ))}
