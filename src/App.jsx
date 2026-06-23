@@ -300,32 +300,32 @@ function LeaderboardPage({ matches }) {
   const teams = calcTeamTable(matches);
 
   const thStyle = (right) => ({
-    padding: "10px 14px", textAlign: right ? "right" : "left",
-    fontSize: 11, fontWeight: 900, letterSpacing: 3, textTransform: "uppercase",
+    padding: "7px 10px", textAlign: right ? "right" : "left",
+    fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase",
     color: C.muted, borderBottom: "1px solid rgba(255,255,255,0.08)",
   });
   const tdStyle = (alt, right) => ({
-    padding: "11px 14px", fontSize: 15, fontWeight: 600,
+    padding: "8px 10px", fontSize: 13, fontWeight: 600,
     textAlign: right ? "right" : "left",
     borderBottom: "1px solid rgba(255,255,255,0.04)",
     background: alt ? "rgba(255,255,255,0.02)" : "transparent",
   });
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "40px 40px" }}>
-      <div style={{ fontSize: 52, fontWeight: 900, textTransform: "uppercase", letterSpacing: 3, marginBottom: 4 }}>
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
+      <div style={{ fontSize: 32, fontWeight: 900, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
         <span style={{ color: C.gold }}>Leader</span>board
       </div>
-      <div style={{ fontSize: 13, color: C.muted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 32 }}>
+      <div style={{ fontSize: 11, color: C.muted, letterSpacing: 3, textTransform: "uppercase", marginBottom: 20 }}>
         Season 2025 · 1pt per set + 1 bonus for match win
       </div>
 
       <div style={{ display: "flex", gap: 0, borderBottom: "2px solid rgba(255,255,255,0.08)", marginBottom: 28 }}>
         {["Individual Standings", "Top 5 Teams"].map((label, i) => (
           <button key={i} onClick={() => setTab(i)} style={{
-            padding: "13px 30px", cursor: "pointer", border: "none",
-            fontFamily: "inherit", fontSize: 13, fontWeight: 900,
-            letterSpacing: 3, textTransform: "uppercase", background: "transparent",
+            padding: "10px 16px", cursor: "pointer", border: "none",
+            fontFamily: "inherit", fontSize: 11, fontWeight: 900,
+            letterSpacing: 2, textTransform: "uppercase", background: "transparent",
             color: tab === i ? C.gold : "#444",
             borderBottom: tab === i ? `2px solid ${C.gold}` : "2px solid transparent",
             marginBottom: -2, transition: "all 0.15s",
@@ -353,7 +353,7 @@ function LeaderboardPage({ matches }) {
                   <td style={{ ...tdStyle(i % 2), fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>{p.name}</td>
                   <td style={{ ...tdStyle(i % 2, true), color: C.muted }}>{p.played}</td>
                   <td style={{ ...tdStyle(i % 2, true), color: "#aaa", fontSize: 13 }}>{p.played > 0 ? (p.points / p.played).toFixed(1) : "—"}</td>
-                  <td style={{ ...tdStyle(i % 2, true), fontSize: 18, fontWeight: 900, color: C.gold }}>{p.points}</td>
+                  <td style={{ ...tdStyle(i % 2, true), fontSize: 15, fontWeight: 900, color: C.gold }}>{p.points}</td>
                 </tr>
               ))}
             </tbody>
