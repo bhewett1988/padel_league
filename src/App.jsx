@@ -227,7 +227,7 @@ function HomePage({ matches, onNav, nextMatchId }) {
     <div style={{ maxWidth: 600, margin: "0 auto", padding: "20px 16px 40px" }}>
       {/* Title */}
       <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 10, color: C.muted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 4 }}>🎾 Season 2025</div>
+        <div style={{ fontSize: 10, color: C.muted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 4 }}>🎾 Season 2026</div>
         <div style={{ fontSize: 36, fontWeight: 900, lineHeight: 0.95, textTransform: "uppercase", letterSpacing: 2 }}>
           <span style={{ color: C.gold }}>Padel</span> League
         </div>
@@ -362,7 +362,7 @@ function LeaderboardPage({ matches }) {
         <span style={{ color: C.gold }}>Team</span> Leaderboard
       </div>
       <div style={{ fontSize: 11, color: C.muted, letterSpacing: 3, textTransform: "uppercase", marginBottom: 20 }}>
-        Season 2025 · 1pt per set + 1 bonus for match win
+        Season 2026 · 1pt per set + 1 bonus for match win
       </div>
       <Card>
         <CardHeader bg={C.gold} dark title="All Partnerships" sub="15 TEAMS" />
