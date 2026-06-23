@@ -130,8 +130,8 @@ function calcTeamTable(matches) {
 
 // ── SHARED STYLES ─────────────────────────────────────────────────────────────
 const C = {
-  gold: "#2979ff", dark: "#0d1b3e", mid: "#0a1628",
-  text: "#f0f4ff", muted: "#6b7db3", dim: "#1e2d50",
+  gold: "#5b8fd4", dark: "#0d1829", mid: "#111f35",
+  text: "#f0f4ff", muted: "#7a90aa", dim: "#1a2d45",
 };
 
 function navBtnStyle(active) {
@@ -147,7 +147,7 @@ function navBtnStyle(active) {
 function Card({ accent, children, style }) {
   return (
     <div style={{
-      background: "rgba(255,255,255,0.04)",
+      background: "rgba(255,255,255,0.03)",
       border: `1px solid ${accent || "rgba(255,255,255,0.08)"}`,
       borderRadius: 4, overflow: "hidden", ...style,
     }}>
@@ -169,13 +169,13 @@ function CardHeader({ bg, dark, title, sub }) {
 }
 
 function PodiumRow({ rank, name, pts, sub }) {
-  const medalBg = rank === 1 ? C.gold : rank === 2 ? "#4a6fa5" : "#0a2a6e";
+  const medalBg = rank === 1 ? C.gold : rank === 2 ? "#5b8fd4" : "#1a3560";
   const medalFg = "#fff";
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
       borderBottom: "1px solid rgba(255,255,255,0.05)",
-      background: rank === 1 ? "rgba(41,121,255,0.06)" : "transparent",
+      background: rank === 1 ? "rgba(91,143,212,0.06)" : "transparent",
     }}>
       <div style={{
         width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
@@ -205,8 +205,8 @@ function BigBtn({ children, onClick, dim, full }) {
         display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
         padding: "11px 16px",
         width: full ? "100%" : "auto",
-        border: `2px solid ${dim ? "rgba(41,121,255,0.3)" : C.gold}`,
-        background: hover ? (dim ? "rgba(41,121,255,0.15)" : C.gold) : "transparent",
+        border: `2px solid ${dim ? "rgba(91,143,212,0.3)" : C.gold}`,
+        background: hover ? (dim ? "rgba(91,143,212,0.15)" : C.gold) : "transparent",
         color: hover ? (dim ? "#fff" : C.dark) : (dim ? "rgba(41,121,255,0.6)" : C.gold),
         fontFamily: "inherit", fontSize: 12, fontWeight: 900,
         letterSpacing: 2, textTransform: "uppercase", cursor: "pointer",
@@ -235,8 +235,8 @@ function HomePage({ matches, onNav, nextMatchId }) {
 
       {/* Match card */}
       <div style={{
-        background: "linear-gradient(135deg, rgba(41,121,255,0.1), rgba(41,121,255,0.02))",
-        border: "1px solid rgba(41,121,255,0.35)", borderRadius: 4, padding: "14px 16px", marginBottom: 14,
+        background: "linear-gradient(135deg, rgba(91,143,212,0.1), rgba(41,121,255,0.02))",
+        border: "1px solid rgba(91,143,212,0.35)", borderRadius: 4, padding: "14px 16px", marginBottom: 14,
       }}>
         <div style={{ fontSize: 10, letterSpacing: 3, color: C.gold, textTransform: "uppercase", fontWeight: 700, marginBottom: 10 }}>
           ⚡ {thisWeek ? `This Week · Match ${thisWeek.id}` : "This Week"}
@@ -270,7 +270,7 @@ function HomePage({ matches, onNav, nextMatchId }) {
       </div>
 
       {/* Full individual table */}
-      <Card accent="rgba(41,121,255,0.3)" style={{ marginBottom: 12 }}>
+      <Card accent="rgba(91,143,212,0.3)" style={{ marginBottom: 12 }}>
         <CardHeader bg={C.gold} dark title="🥇 Individual Standings" sub="" />
         {noResults
           ? <div style={{ padding: "12px", color: C.muted, fontSize: 12 }}>No results yet</div>
@@ -305,7 +305,7 @@ function HomePage({ matches, onNav, nextMatchId }) {
 
       {/* Top 3 Teams */}
       <Card accent="rgba(255,255,255,0.08)">
-        <CardHeader bg="#060f2a" title="🤝 Top 3 Teams" sub="" />
+        <CardHeader bg="#111f35" title="🤝 Top 3 Teams" sub="" />
         {noResults
           ? <div style={{ padding: "12px", color: C.muted, fontSize: 12 }}>No results yet</div>
           : <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -440,7 +440,7 @@ function ResultsPage({ matches, updateScore, nextMatchId, setNextMatchId }) {
           background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center",
         }} onClick={() => { setShowPwModal(false); setPwError(false); setPw(""); }}>
           <div style={{
-            background: "#0d1b3e", border: "1px solid rgba(41,121,255,0.2)", borderRadius: 4,
+            background: "#0d1829", border: "1px solid rgba(91,143,212,0.2)", borderRadius: 4,
             padding: 32, width: 320, display: "flex", flexDirection: "column", gap: 14,
           }} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 3, textTransform: "uppercase", color: C.gold }}>Admin Login</div>
@@ -511,7 +511,7 @@ function ResultsPage({ matches, updateScore, nextMatchId, setNextMatchId }) {
               const t1w = has && m.t1sets > m.t2sets;
               const t2w = has && m.t2sets > m.t1sets;
               const isNext = m.id === nextMatchId;
-              const bg = isNext ? "rgba(41,121,255,0.08)" : i % 2 ? "rgba(255,255,255,0.02)" : "transparent";
+              const bg = isNext ? "rgba(91,143,212,0.08)" : i % 2 ? "rgba(255,255,255,0.02)" : "transparent";
               const cell = { padding: "7px 6px", background: bg, borderBottom: "1px solid rgba(255,255,255,0.04)", verticalAlign: "middle" };
               const scoreInput = (field, isWin) => (
                 <input
@@ -520,7 +520,7 @@ function ResultsPage({ matches, updateScore, nextMatchId, setNextMatchId }) {
                   placeholder="—"
                   style={{
                     background: "rgba(255,255,255,0.07)",
-                    border: `1px solid ${isWin ? "rgba(41,121,255,0.5)" : "rgba(255,255,255,0.12)"}`,
+                    border: `1px solid ${isWin ? "rgba(91,143,212,0.5)" : "rgba(255,255,255,0.12)"}`,
                     borderRadius: 2, color: C.text, fontFamily: "inherit",
                     fontSize: 15, fontWeight: 900, textAlign: "center",
                     padding: "2px 0", width: 34, display: "block", margin: "0 auto",
@@ -649,7 +649,7 @@ function PickMatchPage({ matches, setNextMatchId }) {
           return (
             <button key={p} onClick={() => !disabled && togglePlayer(p)} style={{
               padding: "14px 10px", border: `2px solid ${active ? C.gold : "rgba(255,255,255,0.1)"}`,
-              background: active ? "rgba(41,121,255,0.2)" : "transparent",
+              background: active ? "rgba(91,143,212,0.2)" : "transparent",
               color: disabled ? "rgba(255,255,255,0.2)" : active ? C.gold : C.text,
               fontFamily: "inherit", fontSize: 16, fontWeight: 900,
               letterSpacing: 2, textTransform: "uppercase", cursor: disabled ? "default" : "pointer",
@@ -669,7 +669,7 @@ function PickMatchPage({ matches, setNextMatchId }) {
 
       {suggestion && (
         <div style={{ marginTop: 28 }}>
-          <Card accent={suggestion.allPlayed ? "rgba(255,100,100,0.3)" : "rgba(41,121,255,0.3)"}>
+          <Card accent={suggestion.allPlayed ? "rgba(255,100,100,0.3)" : "rgba(91,143,212,0.3)"}>
             <CardHeader
               bg={suggestion.allPlayed ? "#3a1a1a" : C.gold}
               dark={!suggestion.allPlayed}
@@ -772,13 +772,13 @@ export default function App() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#060e24", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ color: "#2979ff", fontSize: 18, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>Loading...</div>
+    <div style={{ minHeight: "100vh", background: "#0d1829", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ color: "#5b8fd4", fontSize: 18, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>Loading...</div>
     </div>
   );
 
   if (error) return (
-    <div style={{ minHeight: "100vh", background: "#060e24", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16, padding: 40 }}>
+    <div style={{ minHeight: "100vh", background: "#0d1829", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16, padding: 40 }}>
       <div style={{ color: "#e53935", fontSize: 16, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase" }}>Connection Error</div>
       <div style={{ color: "#888", fontSize: 13, fontFamily: "monospace", maxWidth: 600, textAlign: "center" }}>{error}</div>
     </div>
@@ -786,14 +786,14 @@ export default function App() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#060e24", color: C.text,
+      minHeight: "100vh", background: "#0d1829", color: C.text,
       fontFamily: "'Barlow Condensed', 'Impact', sans-serif",
       position: "relative",
     }}>
       {/* Diagonal stripe bg */}
       <div style={{
         position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
-        background: "repeating-linear-gradient(135deg, transparent, transparent 60px, rgba(41,121,255,0.04) 60px, rgba(41,121,255,0.04) 61px)",
+        background: "repeating-linear-gradient(135deg, transparent, transparent 60px, rgba(91,143,212,0.04) 60px, rgba(91,143,212,0.04) 61px)",
       }} />
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* NAV — hidden on home, slim back-bar on other pages */}
@@ -801,8 +801,8 @@ export default function App() {
           <nav style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "0 24px", height: 48,
-            background: "rgba(6,14,36,0.97)",
-            borderBottom: "1px solid rgba(41,121,255,0.3)",
+            background: "rgba(13,24,41,0.97)",
+            borderBottom: "1px solid rgba(91,143,212,0.3)",
             position: "sticky", top: 0, zIndex: 100,
           }}>
             <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: 3, color: C.gold, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 8 }}>
