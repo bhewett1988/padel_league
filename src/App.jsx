@@ -292,7 +292,7 @@ function HomePage({ matches, onNav, nextMatchId }) {
                       <td style={{ ...cell, color: i < 3 ? C.gold : C.muted, fontWeight: 900, width: 32 }}>{i + 1}</td>
                       <td style={{ ...cell, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>{p.name}</td>
                       <td style={{ ...cell, textAlign: "right", color: C.muted }}>{p.played}</td>
-                      <td style={{ ...cell, textAlign: "right", color: "#aaa", fontSize: 12 }}>{p.played > 0 ? (p.points / p.played).toFixed(1) : "—"}</td>
+                      <td style={{ ...cell, textAlign: "right", color: "#aaa", fontSize: 12 }}>{p.played > 0 ? (p.points / p.played).toFixed(2) : "—"}</td>
                       <td style={{ ...cell, textAlign: "right", fontWeight: 900, color: C.gold }}>{p.points}</td>
                     </tr>
                   );
