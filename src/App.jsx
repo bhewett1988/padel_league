@@ -268,110 +268,109 @@ function HomePage({ matches, onNav, nextMatchId }) {
         <BigBtn onClick={() => onNav("pickmatch")} full>📅 Pick Match</BigBtn>
       </div>
 
-      {/* Leaderboards side by side */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <Card accent="rgba(41,121,255,0.3)">
-          <CardHeader bg={C.gold} dark title="🥇 Players" sub="" />
-          {noResults
-            ? <div style={{ padding: "12px", color: C.muted, fontSize: 12 }}>No results yet</div>
-            : indiv.slice(0, 3).map((p, i) => (
-                <PodiumRow key={p.name} rank={i + 1} name={p.name} pts={p.points} />
-              ))
-          }
-        </Card>
-        <Card accent="rgba(255,255,255,0.08)">
-          <CardHeader bg="#060f2a" title="🤝 Teams" sub="" />
-          {noResults
-            ? <div style={{ padding: "12px", color: C.muted, fontSize: 12 }}>No results yet</div>
-            : teams.slice(0, 3).map((t, i) => (
-                <PodiumRow key={t.name} rank={i + 1} name={t.name} pts={t.points} />
-              ))
-          }
-        </Card>
-      </div>
+      {/* Full individual table */}
+      <Card accent="rgba(41,121,255,0.3)" style={{ marginBottom: 12 }}>
+        <CardHeader bg={C.gold} dark title="🥇 Individual Standings" sub="" />
+        {noResults
+          ? <div style={{ padding: "12px", color: C.muted, fontSize: 12 }}>No results yet</div>
+          : <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={{ padding: "6px 10px", fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", color: C.muted, borderBottom: "1px solid rgba(255,255,255,0.08)", textAlign: "left" }}>#</th>
+                  <th style={{ padding: "6px 10px", fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", color: C.muted, borderBottom: "1px solid rgba(255,255,255,0.08)", textAlign: "left" }}>Player</th>
+                  <th style={{ padding: "6px 10px", fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", color: C.muted, borderBottom: "1px solid rgba(255,255,255,0.08)", textAlign: "right" }}>P</th>
+                  <th style={{ padding: "6px 10px", fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", color: C.muted, borderBottom: "1px solid rgba(255,255,255,0.08)", textAlign: "right" }}>PPG</th>
+                  <th style={{ padding: "6px 10px", fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", color: C.gold, borderBottom: "1px solid rgba(255,255,255,0.08)", textAlign: "right" }}>Pts</th>
+                </tr>
+              </thead>
+              <tbody>
+                {indiv.map((p, i) => {
+                  const bg = i % 2 ? "rgba(255,255,255,0.02)" : "transparent";
+                  const cell = { padding: "8px 10px", fontSize: 13, borderBottom: "1px solid rgba(255,255,255,0.04)", background: bg };
+                  return (
+                    <tr key={p.name}>
+                      <td style={{ ...cell, color: i < 3 ? C.gold : C.muted, fontWeight: 900, width: 32 }}>{i + 1}</td>
+                      <td style={{ ...cell, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>{p.name}</td>
+                      <td style={{ ...cell, textAlign: "right", color: C.muted }}>{p.played}</td>
+                      <td style={{ ...cell, textAlign: "right", color: "#aaa", fontSize: 12 }}>{p.played > 0 ? (p.points / p.played).toFixed(1) : "—"}</td>
+                      <td style={{ ...cell, textAlign: "right", fontWeight: 900, color: C.gold }}>{p.points}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+        }
+      </Card>
+
+      {/* Top 3 Teams */}
+      <Card accent="rgba(255,255,255,0.08)">
+        <CardHeader bg="#060f2a" title="🤝 Top 3 Teams" sub="" />
+        {noResults
+          ? <div style={{ padding: "12px", color: C.muted, fontSize: 12 }}>No results yet</div>
+          : teams.slice(0, 3).map((t, i) => (
+              <PodiumRow key={t.name} rank={i + 1} name={t.name} pts={t.points} />
+            ))
+        }
+      </Card>
     </div>
   );
 }
 
 // ── LEADERBOARD PAGE ──────────────────────────────────────────────────────────
 function LeaderboardPage({ matches }) {
-  const [tab, setTab] = useState(0);
-  const indiv = calcIndividualTable(matches);
   const teams = calcTeamTable(matches);
 
-  const thStyle = (right) => ({
+  const thS = (right) => ({
     padding: "7px 10px", textAlign: right ? "right" : "left",
     fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase",
     color: C.muted, borderBottom: "1px solid rgba(255,255,255,0.08)",
   });
-  const tdStyle = (alt, right) => ({
-    padding: "8px 10px", fontSize: 13, fontWeight: 600,
+  const tdS = (alt, right) => ({
+    padding: "8px 10px", fontSize: 12, fontWeight: 600,
     textAlign: right ? "right" : "left",
     borderBottom: "1px solid rgba(255,255,255,0.04)",
     background: alt ? "rgba(255,255,255,0.02)" : "transparent",
   });
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
+    <div style={{ maxWidth: 700, margin: "0 auto", padding: "20px 16px" }}>
       <div style={{ fontSize: 32, fontWeight: 900, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
-        <span style={{ color: C.gold }}>Leader</span>board
+        <span style={{ color: C.gold }}>Team</span> Leaderboard
       </div>
       <div style={{ fontSize: 11, color: C.muted, letterSpacing: 3, textTransform: "uppercase", marginBottom: 20 }}>
         Season 2025 · 1pt per set + 1 bonus for match win
       </div>
-
-      <div style={{ display: "flex", gap: 0, borderBottom: "2px solid rgba(255,255,255,0.08)", marginBottom: 28 }}>
-        {["Individual Standings", "Top 5 Teams"].map((label, i) => (
-          <button key={i} onClick={() => setTab(i)} style={{
-            padding: "10px 16px", cursor: "pointer", border: "none",
-            fontFamily: "inherit", fontSize: 11, fontWeight: 900,
-            letterSpacing: 2, textTransform: "uppercase", background: "transparent",
-            color: tab === i ? C.gold : "#444",
-            borderBottom: tab === i ? `2px solid ${C.gold}` : "2px solid transparent",
-            marginBottom: -2, transition: "all 0.15s",
-          }}>{label}</button>
-        ))}
-      </div>
-
-      {tab === 0 && (
-        <Card>
-          <CardHeader bg={C.gold} dark title="Individual Players" sub={`${PLAYERS.length} PLAYERS`} />
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={thStyle(false)}>#</th>
-                <th style={thStyle(false)}>Player</th>
-                <th style={thStyle(true)}>Played</th>
-                <th style={thStyle(true)}>PPG</th>
-                <th style={{ ...thStyle(true), color: C.gold }}>Points</th>
+      <Card>
+        <CardHeader bg={C.gold} dark title="All Partnerships" sub="15 TEAMS" />
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={thS(false)}>#</th>
+              <th style={thS(false)}>Partnership</th>
+              <th style={thS(true)}>P</th>
+              <th style={thS(true)}>Won</th>
+              <th style={thS(true)}>Lost</th>
+              <th style={thS(true)}>+/-</th>
+              <th style={thS(true)}>Bonus</th>
+              <th style={{ ...thS(true), color: C.gold }}>Pts</th>
+            </tr>
+          </thead>
+          <tbody>
+            {teams.map((t, i) => (
+              <tr key={t.name}>
+                <td style={{ ...tdS(i % 2), color: i < 3 ? C.gold : C.muted, fontWeight: 900, width: 28 }}>{i + 1}</td>
+                <td style={{ ...tdS(i % 2), fontWeight: 700, fontSize: 11, textTransform: "uppercase" }}>{t.name}</td>
+                <td style={tdS(i % 2, true)}>{t.played}</td>
+                <td style={tdS(i % 2, true)}>{t.setsWon}</td>
+                <td style={tdS(i % 2, true)}>{t.setsLost}</td>
+                <td style={{ ...tdS(i % 2, true), color: t.diff >= 0 ? "#4caf50" : "#e53935" }}>{t.diff > 0 ? `+${t.diff}` : t.diff}</td>
+                <td style={tdS(i % 2, true)}>{t.bonus}</td>
+                <td style={{ ...tdS(i % 2, true), fontSize: 14, fontWeight: 900, color: C.gold }}>{t.points}</td>
               </tr>
-            </thead>
-            <tbody>
-              {indiv.map((p, i) => (
-                <tr key={p.name}>
-                  <td style={{ ...tdStyle(i % 2), color: i < 3 ? C.gold : C.muted, fontWeight: 900, width: 36 }}>{i + 1}</td>
-                  <td style={{ ...tdStyle(i % 2), fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>{p.name}</td>
-                  <td style={{ ...tdStyle(i % 2, true), color: C.muted }}>{p.played}</td>
-                  <td style={{ ...tdStyle(i % 2, true), color: "#aaa", fontSize: 13 }}>{p.played > 0 ? (p.points / p.played).toFixed(1) : "—"}</td>
-                  <td style={{ ...tdStyle(i % 2, true), fontSize: 15, fontWeight: 900, color: C.gold }}>{p.points}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-      )}
-
-      {tab === 1 && (
-        <div style={{ maxWidth: 560 }}>
-          <Card accent="rgba(41,121,255,0.2)">
-            <CardHeader bg={C.gold} dark title="Top 5 Partnerships" sub="TEAM RANKINGS" />
-            {teams.slice(0, 5).map((t, i) => (
-              <PodiumRow key={t.name} rank={i + 1} name={t.name} pts={t.points}
-                sub={`${t.played} played · ${t.setsWon} sets won · +${t.bonus} bonus`} />
             ))}
-          </Card>
-        </div>
-      )}
+          </tbody>
+        </table>
+      </Card>
     </div>
   );
 }
