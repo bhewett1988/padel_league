@@ -226,6 +226,13 @@ function BigBtn({ children, onClick, dim, full }) {
   );
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
 // ── HOME PAGE ─────────────────────────────────────────────────────────────────
 function HomePage({ matches, onNav, nextMatchId, authed, onAdminClick, onLock }) {
   const indiv = calcIndividualTable(matches);
@@ -277,7 +284,7 @@ function HomePage({ matches, onNav, nextMatchId, authed, onAdminClick, onLock })
         )}
         {thisWeek && (thisWeek.match_date || thisWeek.match_time || thisWeek.match_location) && (
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 10, paddingTop: 10, display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {thisWeek.match_date && <span style={{ fontSize: 11, color: C.muted }}><span style={{ color: C.gold }}>📅</span> {thisWeek.match_date}</span>}
+            {thisWeek.match_date && <span style={{ fontSize: 11, color: C.muted }}><span style={{ color: C.gold }}>📅</span> {formatDate(thisWeek.match_date)}</span>}
             {thisWeek.match_time && <span style={{ fontSize: 11, color: C.muted }}><span style={{ color: C.gold }}>🕐</span> {thisWeek.match_time}</span>}
             {thisWeek.match_location && <span style={{ fontSize: 11, color: C.muted }}><span style={{ color: C.gold }}>📍</span> {thisWeek.match_location}</span>}
           </div>
@@ -366,6 +373,8 @@ function HomePage({ matches, onNav, nextMatchId, authed, onAdminClick, onLock })
 
 // ── LEADERBOARD PAGE ──────────────────────────────────────────────────────────
 function LeaderboardPage({ matches }) {
+  const [tab, setTab] = useState(0);
+  const indiv = calcIndividualTable(matches);
   const teams = calcTeamTable(matches);
 
   const thS = (right) => ({
@@ -383,44 +392,99 @@ function LeaderboardPage({ matches }) {
   return (
     <div style={{ maxWidth: 700, margin: "0 auto", padding: "20px 16px" }}>
       <div style={{ fontSize: 32, fontWeight: 900, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
-        <span style={{ color: C.gold }}>Team</span> Leaderboard
+        <span style={{ color: C.gold }}>Leader</span>board
       </div>
-      <div style={{ fontSize: 11, color: C.muted, letterSpacing: 3, textTransform: "uppercase", marginBottom: 20 }}>
+      <div style={{ fontSize: 11, color: C.muted, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>
         Season 2026 · 1pt per set + 1 bonus for match win
       </div>
-      <Card>
-        <CardHeader bg={C.gold} dark title="All Partnerships" sub="15 TEAMS" />
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th style={thS(false)}>#</th>
-              <th style={thS(false)}>Partnership</th>
-              <th style={thS(true)}>P</th>
-              <th style={thS(true)}>Won</th>
-              <th style={thS(true)}>Lost</th>
-              <th style={thS(true)}>+/-</th>
-              <th style={thS(true)}>Bonus</th>
-              <th style={thS(true)}>PPG</th>
-              <th style={{ ...thS(true), color: C.gold }}>Pts</th>
-            </tr>
-          </thead>
-          <tbody>
-            {teams.map((t, i) => (
-              <tr key={t.name}>
-                <td style={{ ...tdS(i % 2), color: i < 3 ? C.gold : C.muted, fontWeight: 900, width: 28 }}>{i + 1}</td>
-                <td style={{ ...tdS(i % 2), fontWeight: 700, fontSize: 11, textTransform: "uppercase" }}>{t.name}</td>
-                <td style={tdS(i % 2, true)}>{t.played}</td>
-                <td style={tdS(i % 2, true)}>{t.setsWon}</td>
-                <td style={tdS(i % 2, true)}>{t.setsLost}</td>
-                <td style={{ ...tdS(i % 2, true), color: t.diff >= 0 ? "#4caf50" : "#e53935" }}>{t.diff > 0 ? `+${t.diff}` : t.diff}</td>
-                <td style={tdS(i % 2, true)}>{t.bonus}</td>
-                <td style={{ ...tdS(i % 2, true), color: "#aaa" }}>{t.played > 0 ? t.ppg.toFixed(2) : "—"}</td>
-                <td style={{ ...tdS(i % 2, true), fontSize: 14, fontWeight: 900, color: C.gold }}>{t.points}</td>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", borderBottom: "2px solid rgba(255,255,255,0.08)", marginBottom: 20 }}>
+        {["Individual", "Teams"].map((label, i) => (
+          <button key={i} onClick={() => setTab(i)} style={{
+            padding: "10px 20px", cursor: "pointer", border: "none",
+            fontFamily: "inherit", fontSize: 11, fontWeight: 900,
+            letterSpacing: 2, textTransform: "uppercase", background: "transparent",
+            color: tab === i ? C.gold : "#444",
+            borderBottom: tab === i ? `2px solid ${C.gold}` : "2px solid transparent",
+            marginBottom: -2, transition: "all 0.15s",
+          }}>{label}</button>
+        ))}
+      </div>
+
+      {/* Individual tab */}
+      {tab === 0 && (
+        <Card>
+          <CardHeader bg={C.gold} dark title="Individual Players" sub={`${PLAYERS.length} PLAYERS`} />
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th style={thS(false)}>#</th>
+                <th style={thS(false)}>Player</th>
+                <th style={thS(true)}>Played</th>
+                <th style={thS(true)}>Won</th>
+                <th style={thS(true)}>Lost</th>
+                <th style={thS(true)}>+/-</th>
+                <th style={thS(true)}>Bonus</th>
+                <th style={thS(true)}>PPG</th>
+                <th style={{ ...thS(true), color: C.gold }}>Pts</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+            </thead>
+            <tbody>
+              {indiv.map((p, i) => (
+                <tr key={p.name}>
+                  <td style={{ ...tdS(i % 2), color: i < 3 ? C.gold : C.muted, fontWeight: 900, width: 28 }}>{i + 1}</td>
+                  <td style={{ ...tdS(i % 2), fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>{p.name}</td>
+                  <td style={tdS(i % 2, true)}>{p.played}</td>
+                  <td style={tdS(i % 2, true)}>{p.setsWon}</td>
+                  <td style={tdS(i % 2, true)}>{p.setsLost}</td>
+                  <td style={{ ...tdS(i % 2, true), color: p.diff >= 0 ? "#4caf50" : "#e53935" }}>{p.diff > 0 ? `+${p.diff}` : p.diff}</td>
+                  <td style={tdS(i % 2, true)}>{p.bonus}</td>
+                  <td style={{ ...tdS(i % 2, true), color: "#aaa" }}>{p.played > 0 ? (p.points / p.played).toFixed(2) : "—"}</td>
+                  <td style={{ ...tdS(i % 2, true), fontSize: 14, fontWeight: 900, color: C.gold }}>{p.points}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
+      {/* Teams tab */}
+      {tab === 1 && (
+        <Card>
+          <CardHeader bg={C.gold} dark title="All Partnerships" sub="15 TEAMS" />
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th style={thS(false)}>#</th>
+                <th style={thS(false)}>Partnership</th>
+                <th style={thS(true)}>P</th>
+                <th style={thS(true)}>Won</th>
+                <th style={thS(true)}>Lost</th>
+                <th style={thS(true)}>+/-</th>
+                <th style={thS(true)}>Bonus</th>
+                <th style={thS(true)}>PPG</th>
+                <th style={{ ...thS(true), color: C.gold }}>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teams.map((t, i) => (
+                <tr key={t.name}>
+                  <td style={{ ...tdS(i % 2), color: i < 3 ? C.gold : C.muted, fontWeight: 900, width: 28 }}>{i + 1}</td>
+                  <td style={{ ...tdS(i % 2), fontWeight: 700, fontSize: 11, textTransform: "uppercase" }}>{t.name}</td>
+                  <td style={tdS(i % 2, true)}>{t.played}</td>
+                  <td style={tdS(i % 2, true)}>{t.setsWon}</td>
+                  <td style={tdS(i % 2, true)}>{t.setsLost}</td>
+                  <td style={{ ...tdS(i % 2, true), color: t.diff >= 0 ? "#4caf50" : "#e53935" }}>{t.diff > 0 ? `+${t.diff}` : t.diff}</td>
+                  <td style={tdS(i % 2, true)}>{t.bonus}</td>
+                  <td style={{ ...tdS(i % 2, true), color: "#aaa" }}>{t.played > 0 ? t.ppg.toFixed(2) : "—"}</td>
+                  <td style={{ ...tdS(i % 2, true), fontSize: 14, fontWeight: 900, color: C.gold }}>{t.points}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
     </div>
   );
 }
