@@ -35,6 +35,9 @@ async function loadMatches() {
     t1sets: r.t1sets,
     t2sets: r.t2sets,
     isNext: r.is_next,
+    match_date: r.match_date || null,
+    match_time: r.match_time || null,
+    match_location: r.match_location || null,
   }));
 }
 
@@ -42,6 +45,13 @@ async function saveScore(id, t1sets, t2sets) {
   await sbFetch(`matches?id=eq.${id}`, {
     method: "PATCH",
     body: JSON.stringify({ t1sets, t2sets }),
+  });
+}
+
+async function saveMatchDetails(id, match_date, match_time, match_location) {
+  await sbFetch(`matches?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ match_date, match_time, match_location }),
   });
 }
 
@@ -217,7 +227,7 @@ function BigBtn({ children, onClick, dim, full }) {
 }
 
 // ── HOME PAGE ─────────────────────────────────────────────────────────────────
-function HomePage({ matches, onNav, nextMatchId }) {
+function HomePage({ matches, onNav, nextMatchId, authed, onAdminClick, onLock }) {
   const indiv = calcIndividualTable(matches);
   const teams = calcTeamTable(matches);
   const thisWeek = matches.find(m => m.id === nextMatchId) || matches.find(m => m.t1sets === null && m.t2sets === null) || null;
@@ -225,12 +235,19 @@ function HomePage({ matches, onNav, nextMatchId }) {
 
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: "20px 16px 40px" }}>
-      {/* Title */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 10, color: C.muted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 4 }}>🎾 Season 2026</div>
-        <div style={{ fontSize: 36, fontWeight: 900, lineHeight: 0.95, textTransform: "uppercase", letterSpacing: 2 }}>
-          <span style={{ color: C.gold }}>Padel</span> League
+      {/* Title + admin button */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 10, color: C.muted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 4 }}>🎾 Season 2026</div>
+          <div style={{ fontSize: 36, fontWeight: 900, lineHeight: 0.95, textTransform: "uppercase", letterSpacing: 2 }}>
+            <span style={{ color: C.gold }}>Padel</span> League
+          </div>
         </div>
+        {authed ? (
+          <button onClick={onLock} style={{ marginTop: 8, padding: "6px 12px", border: "1px solid rgba(91,143,212,0.3)", background: "transparent", color: C.muted, fontFamily: "inherit", fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", borderRadius: 2 }}>🔓 Lock</button>
+        ) : (
+          <button onClick={onAdminClick} style={{ marginTop: 8, padding: "6px 12px", border: `1px solid ${C.gold}`, background: "transparent", color: C.gold, fontFamily: "inherit", fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", borderRadius: 2 }}>🔒 Admin</button>
+        )}
       </div>
 
       {/* Match card */}
@@ -257,6 +274,13 @@ function HomePage({ matches, onNav, nextMatchId }) {
           </div>
         ) : (
           <div style={{ color: C.muted, fontSize: 13, textAlign: "center", padding: "8px 0" }}>All matches complete</div>
+        )}
+        {thisWeek && (thisWeek.match_date || thisWeek.match_time || thisWeek.match_location) && (
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 10, paddingTop: 10, display: "flex", flexWrap: "wrap", gap: 10 }}>
+            {thisWeek.match_date && <span style={{ fontSize: 11, color: C.muted }}><span style={{ color: C.gold }}>📅</span> {thisWeek.match_date}</span>}
+            {thisWeek.match_time && <span style={{ fontSize: 11, color: C.muted }}><span style={{ color: C.gold }}>🕐</span> {thisWeek.match_time}</span>}
+            {thisWeek.match_location && <span style={{ fontSize: 11, color: C.muted }}><span style={{ color: C.gold }}>📍</span> {thisWeek.match_location}</span>}
+          </div>
         )}
       </div>
 
@@ -402,11 +426,7 @@ function LeaderboardPage({ matches }) {
 }
 
 // ── RESULTS PAGE ──────────────────────────────────────────────────────────────
-function ResultsPage({ matches, updateScore, nextMatchId, setNextMatchId }) {
-  const [authed, setAuthed] = useState(false);
-  const [showPwModal, setShowPwModal] = useState(false);
-  const [pw, setPw] = useState("");
-  const [pwError, setPwError] = useState(false);
+function ResultsPage({ matches, updateScore, nextMatchId, setNextMatchId, authed }) {
   const [saved, setSaved] = useState(false);
 
   function login() {
@@ -433,36 +453,7 @@ function ResultsPage({ matches, updateScore, nextMatchId, setNextMatchId }) {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px" }}>
-      {/* Password modal */}
-      {showPwModal && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 200,
-          background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center",
-        }} onClick={() => { setShowPwModal(false); setPwError(false); setPw(""); }}>
-          <div style={{
-            background: "#0d1829", border: "1px solid rgba(91,143,212,0.2)", borderRadius: 4,
-            padding: 32, width: 320, display: "flex", flexDirection: "column", gap: 14,
-          }} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 3, textTransform: "uppercase", color: C.gold }}>Admin Login</div>
-            <input
-              autoFocus type="password" value={pw} placeholder="Password"
-              onChange={e => { setPw(e.target.value); setPwError(false); }}
-              onKeyDown={e => e.key === "Enter" && login()}
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: `1px solid ${pwError ? "#e53935" : "rgba(255,255,255,0.15)"}`,
-                borderRadius: 2, color: C.text, fontFamily: "inherit",
-                fontSize: 15, padding: "9px 14px", letterSpacing: 3, outline: "none",
-              }}
-            />
-            {pwError && <div style={{ color: "#e53935", fontSize: 12, letterSpacing: 2 }}>Incorrect password</div>}
-            <div style={{ display: "flex", gap: 10 }}>
-              <BigBtn onClick={login}>Unlock →</BigBtn>
-              <BigBtn onClick={() => { setShowPwModal(false); setPwError(false); setPw(""); }} dim>Cancel</BigBtn>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
@@ -476,8 +467,8 @@ function ResultsPage({ matches, updateScore, nextMatchId, setNextMatchId }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {authed
-            ? <BigBtn onClick={() => setAuthed(false)} dim>Lock</BigBtn>
-            : <BigBtn onClick={() => setShowPwModal(true)}>🔒 Edit Scores</BigBtn>
+            ? <div style={{ fontSize: 11, color: "#4caf50", letterSpacing: 2, textTransform: "uppercase", fontWeight: 700 }}>🔓 Admin</div>
+            : <div style={{ fontSize: 11, color: C.muted, letterSpacing: 2, textTransform: "uppercase" }}>🔒 View Only</div>
           }
         </div>
       </div>
@@ -578,10 +569,14 @@ function ResultsPage({ matches, updateScore, nextMatchId, setNextMatchId }) {
 
 
 // ── PICK MATCH PAGE ───────────────────────────────────────────────────────────
-function PickMatchPage({ matches, setNextMatchId }) {
+function PickMatchPage({ matches, setNextMatchId, authed, saveMatchDetails }) {
   const [selected, setSelected] = useState([]);
   const [suggestion, setSuggestion] = useState(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [matchDate, setMatchDate] = useState("");
+  const [matchTime, setMatchTime] = useState("");
+  const [matchLocation, setMatchLocation] = useState("");
+  const [detailsSaved, setDetailsSaved] = useState(false);
 
   function togglePlayer(p) {
     setSelected(prev => {
@@ -627,7 +622,17 @@ function PickMatchPage({ matches, setNextMatchId }) {
   async function confirmMatch() {
     if (!suggestion) return;
     await setNextMatchId(suggestion.match.id);
+    if (matchDate || matchTime || matchLocation) {
+      await saveMatchDetails(suggestion.match.id, matchDate || null, matchTime || null, matchLocation || null);
+    }
     setConfirmed(true);
+  }
+
+  async function handleSaveDetails() {
+    if (!suggestion) return;
+    await saveMatchDetails(suggestion.match.id, matchDate || null, matchTime || null, matchLocation || null);
+    setDetailsSaved(true);
+    setTimeout(() => setDetailsSaved(false), 2500);
   }
 
   const th = { padding: "10px 14px", fontSize: 11, fontWeight: 900, letterSpacing: 3, textTransform: "uppercase", color: C.muted, borderBottom: "1px solid rgba(255,255,255,0.08)" };
@@ -713,6 +718,37 @@ function PickMatchPage({ matches, setNextMatchId }) {
               ) : (
                 <BigBtn onClick={confirmMatch}>📌 Set as Next Match</BigBtn>
               )}
+
+              {/* Match details */}
+              <div style={{ marginTop: 20, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 3, textTransform: "uppercase", color: C.gold, marginBottom: 12 }}>Match Details</div>
+                {authed ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: C.muted, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>📅 Date</div>
+                      <input type="date" value={matchDate} onChange={e => setMatchDate(e.target.value)}
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 2, color: C.text, fontFamily: "inherit", fontSize: 13, padding: "8px 10px", width: "100%", boxSizing: "border-box", outline: "none" }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: C.muted, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>🕐 Time</div>
+                      <input type="time" value={matchTime} onChange={e => setMatchTime(e.target.value)}
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 2, color: C.text, fontFamily: "inherit", fontSize: 13, padding: "8px 10px", width: "100%", boxSizing: "border-box", outline: "none" }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: C.muted, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>📍 Location</div>
+                      <input type="text" value={matchLocation} onChange={e => setMatchLocation(e.target.value)}
+                        placeholder="e.g. Robertsbridge Padel Club"
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 2, color: C.text, fontFamily: "inherit", fontSize: 13, padding: "8px 10px", width: "100%", boxSizing: "border-box", outline: "none" }} />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4 }}>
+                      <BigBtn onClick={handleSaveDetails}>💾 Save Details</BigBtn>
+                      {detailsSaved && <span style={{ fontSize: 12, color: "#4caf50", letterSpacing: 2, fontWeight: 700 }}>✓ Saved</span>}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 12, color: C.muted, letterSpacing: 2 }}>🔒 Unlock admin on home screen to add details</div>
+                )}
+              </div>
             </div>
           </Card>
         </div>
@@ -734,6 +770,20 @@ export default function App() {
   const [nextMatchId, setNextMatchId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [authed, setAuthed] = useState(false);
+  const [showPwModal, setShowPwModal] = useState(false);
+  const [pw, setPw] = useState("");
+  const [pwError, setPwError] = useState(false);
+
+  function login() {
+    if (pw === ADMIN_PASSWORD) { setAuthed(true); setPwError(false); setShowPwModal(false); setPw(""); }
+    else { setPwError(true); setPw(""); }
+  }
+
+  async function handleSaveMatchDetails(id, date, time, location) {
+    setMatches(prev => prev.map(m => m.id === id ? { ...m, match_date: date, match_time: time, match_location: location } : m));
+    try { await saveMatchDetails(id, date, time, location); } catch (e) { console.error(e); }
+  }
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -795,6 +845,25 @@ export default function App() {
         position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
         background: "repeating-linear-gradient(135deg, transparent, transparent 60px, rgba(91,143,212,0.04) 60px, rgba(91,143,212,0.04) 61px)",
       }} />
+      {/* Global admin password modal */}
+      {showPwModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center" }}
+          onClick={() => { setShowPwModal(false); setPwError(false); setPw(""); }}>
+          <div style={{ background: "#0d1829", border: "1px solid rgba(91,143,212,0.2)", borderRadius: 4, padding: 28, width: 300, display: "flex", flexDirection: "column", gap: 12 }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 3, textTransform: "uppercase", color: C.gold }}>Admin Login</div>
+            <input autoFocus type="password" value={pw} placeholder="Password"
+              onChange={e => { setPw(e.target.value); setPwError(false); }}
+              onKeyDown={e => e.key === "Enter" && login()}
+              style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${pwError ? "#e53935" : "rgba(255,255,255,0.15)"}`, borderRadius: 2, color: C.text, fontFamily: "inherit", fontSize: 15, padding: "9px 14px", letterSpacing: 3, outline: "none" }} />
+            {pwError && <div style={{ color: "#e53935", fontSize: 12, letterSpacing: 2 }}>Incorrect password</div>}
+            <div style={{ display: "flex", gap: 10 }}>
+              <BigBtn onClick={login}>Unlock →</BigBtn>
+              <BigBtn onClick={() => { setShowPwModal(false); setPwError(false); setPw(""); }} dim>Cancel</BigBtn>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* NAV — hidden on home, slim back-bar on other pages */}
         {page !== "home" && (
@@ -819,10 +888,10 @@ export default function App() {
           </nav>
         )}
 
-        {page === "home"        && <HomePage matches={matches} onNav={setPage} nextMatchId={nextMatchId} />}
+        {page === "home"        && <HomePage matches={matches} onNav={setPage} nextMatchId={nextMatchId} authed={authed} onAdminClick={() => setShowPwModal(true)} onLock={() => setAuthed(false)} />}
         {page === "leaderboard" && <LeaderboardPage matches={matches} />}
-        {page === "results"     && <ResultsPage matches={matches} updateScore={handleUpdateScore} nextMatchId={nextMatchId} setNextMatchId={handleSetNextMatch} />}
-        {page === "pickmatch"   && <PickMatchPage matches={matches} setNextMatchId={handleSetNextMatch} />}
+        {page === "results"     && <ResultsPage matches={matches} updateScore={handleUpdateScore} nextMatchId={nextMatchId} setNextMatchId={handleSetNextMatch} authed={authed} />}
+        {page === "pickmatch"   && <PickMatchPage matches={matches} setNextMatchId={handleSetNextMatch} authed={authed} saveMatchDetails={handleSaveMatchDetails} />}
       </div>
     </div>
   );
